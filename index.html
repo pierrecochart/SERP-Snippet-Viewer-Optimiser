@@ -4,113 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced SERP Preview Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* --- RESET & VARIABLES (From Style Source) --- */
         :root {
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --google-blue: #1a0dab;
-            --google-gray: #4d5156;
+            --google-blue: #4285F4;
+            --google-blue-hover: #3367d6;
+            --google-red: #EA4335;
+            --google-yellow: #FBBC05;
+            --google-green: #34A853;
+            --google-grey: #f1f3f4;
+            --text-dark: #202124;
+            --text-grey: #5f6368;
             --border-color: #dadce0;
-            --alert-red: #d93025;
-            --alert-orange: #f9ab00;
-            --alert-green: #188038;
+            
+            /* Logic Specific Colors mapped to Style Variables */
+            --alert-red: var(--google-red);
+            --alert-orange: var(--google-yellow);
+            --alert-green: var(--google-green);
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: #333;
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Roboto', -apple-system, sans-serif; 
+            background: var(--google-grey); 
+            padding: 20px; 
+            color: var(--text-dark);
             margin: 0;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
         }
 
-        .container {
+        /* --- LAYOUT GRID --- */
+        .main-wrapper {
+            display: flex;
+            flex-direction: row; 
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        .instructions-container {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .instructions-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+        }
+
+        .tool-container { 
+            flex: 2;
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15); 
             width: 100%;
-            max-width: 900px;
-            background: var(--card-bg);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
-        /* --- Header & Toggles --- */
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 20px;
+        /* --- TYPOGRAPHY --- */
+        h1 { margin-top: 0; color: var(--text-dark); font-size: 24px; font-weight: 400; margin-bottom: 25px; }
+        h2 { font-size: 18px; margin-top: 0; color: var(--google-blue); }
+        p, li { font-size: 14px; line-height: 1.5; color: var(--text-grey); }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 8px; }
+
+        /* --- FORM ELEMENTS --- */
+        .form-group { margin-bottom: 24px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-dark); font-size: 14px; }
+        
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 4px; 
+            font-size: 14px; 
+            color: var(--text-dark); 
+            transition: all 0.2s;
+            font-family: inherit;
+            background: white;
         }
 
-        h2 { margin: 0; color: #202124; }
+        input[type="text"] { height: 44px; }
+        textarea { min-height: 80px; resize: vertical; }
 
+        input:focus, textarea:focus { 
+            border-color: var(--google-blue);
+            box-shadow: 0 0 0 1px var(--google-blue); 
+            outline: none; 
+        }
+
+        /* --- TOGGLES (Styled to match Buttons) --- */
         .view-toggle {
             display: flex;
-            background: #eee;
-            border-radius: 20px;
+            background: #f1f3f4;
+            border-radius: 22px;
             padding: 4px;
+            width: fit-content;
+            margin-bottom: 20px;
         }
 
         .view-btn {
             border: none;
             background: none;
-            padding: 8px 20px;
-            border-radius: 16px;
+            padding: 8px 24px;
+            border-radius: 18px;
             cursor: pointer;
-            font-weight: 600;
-            color: #555;
+            font-weight: 500;
+            color: var(--text-grey);
+            font-family: 'Roboto', sans-serif;
+            font-size: 13px;
             transition: all 0.2s;
         }
 
         .view-btn.active {
             background: white;
             color: var(--google-blue);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* --- Input Section --- */
-        .input-group { margin-bottom: 25px; }
-
-        label {
-            display: block;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
             font-weight: 700;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #3c4043;
         }
 
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 16px;
-            box-sizing: border-box;
-            font-family: inherit;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            border-color: var(--google-blue);
-            outline: none;
-        }
-
-        textarea { resize: vertical; min-height: 80px; }
-
-        /* --- Progress Bars & Alerts --- */
+        /* --- PROGRESS BARS --- */
         .meter-container {
             margin-top: 8px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .progress-bar {
-            height: 8px;
+            height: 6px;
             background: #f1f3f4;
             border-radius: 4px;
             flex-grow: 1;
@@ -127,32 +154,33 @@
 
         .pixel-info {
             text-align: right;
-            min-width: 120px;
+            min-width: 130px;
+            color: var(--text-grey);
+            font-size: 12px;
         }
 
-        .pixel-count { font-family: monospace; font-weight: bold; }
-        
         .over-limit-msg {
             display: block;
             color: var(--alert-red);
-            font-size: 0.75rem;
             font-weight: 700;
             margin-top: 2px;
-            opacity: 0; /* Hidden by default */
+            opacity: 0;
             transition: opacity 0.2s;
         }
 
-        /* --- Preview Container --- */
+        /* --- PREVIEW CONTAINER --- */
         .preview-wrapper {
             background: #fff;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 30px;
-            min-height: 200px;
+            min-height: 180px;
             display: flex;
-            justify-content: center; /* Center the mobile view */
+            justify-content: flex-start; /* Default left align */
             align-items: flex-start;
             position: relative;
+            margin-top: 30px;
+            background-color: #f8f9fa; /* Slight off-white for contrast inside white card */
         }
 
         .device-label {
@@ -163,31 +191,39 @@
             font-size: 0.7rem;
             color: #aaa;
             letter-spacing: 1px;
+            font-weight: 500;
         }
 
-        /* --- SERP Styles (Common) --- */
+        /* --- SERP STYLES (Google Imitation) --- */
         .g-container {
             font-family: arial, sans-serif;
             line-height: 1.58;
             text-align: left;
+            background: white;
         }
 
         /* Mode: Desktop */
         .g-container.desktop {
             width: 600px;
+            background: transparent;
         }
         
         /* Mode: Mobile */
         .g-container.mobile {
-            width: 375px; /* Standard iPhone width */
-            border: 1px solid #eee; /* Simulate phone screen border */
-            border-radius: 15px;
+            width: 375px; 
+            border: 1px solid #ddd;
+            border-radius: 16px;
             padding: 15px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-top: 10px;
+            background: white;
+            margin: 10px auto 0 auto; /* Center in preview area */
+        }
+        
+        /* Mobile Centering Wrapper Fix */
+        .preview-wrapper.mobile-mode {
+            justify-content: center;
         }
 
-        /* Element: URL/Breadcrumb */
         .g-cite {
             color: #202124;
             font-size: 14px;
@@ -212,46 +248,35 @@
             background-size: 16px;
             background-repeat: no-repeat;
             background-position: center;
+            border: 1px solid #ededed;
         }
 
-        /* Element: Title */
         .g-title {
             font-family: arial, sans-serif;
             font-size: 20px;
             line-height: 1.3;
-            color: var(--google-blue);
+            color: #1a0dab;
             text-decoration: none;
             display: inline-block;
             margin-bottom: 3px;
         }
-
         .g-title:hover { text-decoration: underline; }
 
-        /* Element: Description */
         .g-desc {
-            color: var(--google-gray);
+            color: #4d5156;
             font-size: 14px;
             line-height: 1.58;
             word-wrap: break-word;
         }
 
-        /* --- Mobile Specific Tweaks --- */
-        .g-container.mobile .g-cite {
-            font-size: 12px;
-            color: #5f6368;
-            margin-bottom: 8px;
-        }
+        /* Mobile Specific Tweaks */
+        .g-container.mobile .g-cite { font-size: 12px; color: #5f6368; margin-bottom: 8px; }
+        .g-container.mobile .g-favicon { width: 16px; height: 16px; margin-right: 8px; }
+        .g-container.mobile .g-title { color: #1558d6; margin-bottom: 8px; }
 
-        .g-container.mobile .g-favicon {
-            width: 16px;
-            height: 16px;
-            margin-right: 8px;
-        }
-        
-        .g-container.mobile .g-title {
-            color: #1558d6; /* Mobile blue is sometimes slightly different */
-            margin-bottom: 8px;
-        }
+        /* --- DONATION SECTION --- */
+        .donate-section { margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--border-color); text-align: center; }
+        .donate-text { font-size: 13px; color: var(--text-grey); margin-bottom: 15px; font-style: italic; }
 
         /* --- HIDDEN MEASUREMENT --- */
         #ruler {
@@ -261,76 +286,102 @@
             top: -9999px;
             left: -9999px;
         }
-        
-        /* Font classes for measurement */
         .font-desktop-title { font-family: arial, sans-serif; font-size: 20px; }
         .font-desktop-desc { font-family: arial, sans-serif; font-size: 14px; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 850px) {
+            .main-wrapper { flex-direction: column; padding: 0; }
+            .instructions-container { width: 100%; order: -1; margin-bottom: 0; }
+            .tool-container { width: 100%; padding: 20px; }
+            .g-container.desktop { width: 100%; } /* Fluid on small screens */
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header-row">
-        <div>
-            <h2>SERP Snippet Optimizer</h2>
-            <p style="color:#666; font-size: 0.9rem; margin: 5px 0 0 0;">Pixel-perfect simulation with truncation estimation</p>
-        </div>
-        
-        <div class="view-toggle">
-            <button class="view-btn active" onclick="setMode('desktop')" id="btn-desktop">Desktop</button>
-            <button class="view-btn" onclick="setMode('mobile')" id="btn-mobile">Mobile</button>
-        </div>
-    </div>
-
-    <span id="ruler"></span>
-
-    <div class="input-group">
-        <label>Page Title</label>
-        <input type="text" id="input-title" value="Best SEO Tools 2026: The Ultimate Guide to Search Engine Optimisation">
-        <div class="meter-container">
-            <div class="progress-bar"><div id="bar-title" class="progress-fill"></div></div>
-            <div class="pixel-info">
-                <div id="count-title" class="pixel-count">0px / 600px</div>
-                <div id="msg-title" class="over-limit-msg"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="input-group">
-        <label>Meta Description</label>
-        <textarea id="input-desc">Learn how to optimize your website with the best SEO tools available. This comprehensive guide covers keyword research, technical SEO, and backlink strategies.</textarea>
-        <div class="meter-container">
-            <div class="progress-bar"><div id="bar-desc" class="progress-fill"></div></div>
-            <div class="pixel-info">
-                <div id="count-desc" class="pixel-count">0px / 960px</div>
-                <div id="msg-desc" class="over-limit-msg"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="input-group">
-        <label>URL / Breadcrumb</label>
-        <input type="text" id="input-url" value="https://www.example.com › blog › seo-tools">
-    </div>
-
-    <div class="preview-wrapper">
-        <div class="device-label" id="device-label">Desktop Preview</div>
-        
-        <div id="g-container" class="g-container desktop">
+<div class="main-wrapper">
+    
+    <div class="instructions-container">
+        <div class="instructions-content">
+            <h2>How to Use</h2>
+            <ul>
+                <li><strong>Title Tag:</strong> Enter your page title. Google typically cuts off titles around 600px. Ideally, keep it under 60 characters.</li>
+                <li><strong>Meta Description:</strong> Write a compelling summary. Desktop limit is ~960px (~155 chars), mobile is shorter.</li>
+                <li><strong>Pixels vs Characters:</strong> Google truncates based on pixel width, not character count. "W" is wider than "i". This tool calculates exact pixels.</li>
+                <li><strong>View Modes:</strong> Toggle between Desktop and Mobile to see how your snippet appears on different devices.</li>
+            </ul>
             
-            <div class="g-cite">
-                <span class="g-favicon"></span>
-                <span id="preview-url">example.com</span>
-            </div>
-            
-            <a href="#" class="g-title" id="preview-title">
-                Page Title
-            </a>
-            
-            <div class="g-desc" id="preview-desc">
-                Description goes here...
+            <div class="donate-section">
+                <p class="donate-text">This tool is free to use. If it helps your SEO workflow, consider buying me a coffee.</p>
+                <a href="https://www.buymeacoffee.com/PierreCochart" target="_blank">
+                    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 45px !important; width: auto !important;" >
+                </a>
             </div>
         </div>
+    </div>
+
+    <div class="tool-container">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap;">
+            <h1>SERP Preview Tool</h1>
+            
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setMode('desktop')" id="btn-desktop">Desktop</button>
+                <button class="view-btn" onclick="setMode('mobile')" id="btn-mobile">Mobile</button>
+            </div>
+        </div>
+
+        <span id="ruler"></span>
+
+        <div class="form-group">
+            <label>Page Title</label>
+            <input type="text" id="input-title" value="Best SEO Tools 2026: The Ultimate Guide to Search Engine Optimization">
+            <div class="meter-container">
+                <div class="progress-bar"><div id="bar-title" class="progress-fill"></div></div>
+                <div class="pixel-info">
+                    <div id="count-title" class="pixel-count">0px / 600px</div>
+                    <div id="msg-title" class="over-limit-msg"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Meta Description</label>
+            <textarea id="input-desc">Learn how to optimize your website with the best SEO tools available. This comprehensive guide covers keyword research, technical SEO, and backlink strategies.</textarea>
+            <div class="meter-container">
+                <div class="progress-bar"><div id="bar-desc" class="progress-fill"></div></div>
+                <div class="pixel-info">
+                    <div id="count-desc" class="pixel-count">0px / 960px</div>
+                    <div id="msg-desc" class="over-limit-msg"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>URL / Breadcrumb</label>
+            <input type="text" id="input-url" value="https://www.example.com › blog › seo-tools">
+        </div>
+
+        <div class="preview-wrapper" id="preview-wrapper">
+            <div class="device-label" id="device-label">Desktop Preview</div>
+            
+            <div id="g-container" class="g-container desktop">
+                
+                <div class="g-cite">
+                    <span class="g-favicon"></span>
+                    <span id="preview-url">example.com</span>
+                </div>
+                
+                <a href="#" class="g-title" id="preview-title">
+                    Page Title
+                </a>
+                
+                <div class="g-desc" id="preview-desc">
+                    Description goes here...
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -339,11 +390,9 @@
     const MAX_TITLE_DESKTOP = 600;
     const MAX_DESC_DESKTOP = 960;
     
-    // Mobile is trickier. Visually it's narrow (~360px), but Google allows wrapping. 
-    // However, for an "Optimizer", we usually stick to the 600px 'safe zone' rule for the input
-    // but render it visually narrow.
+    // Mobile 'Safe Zones' for calculation warnings
     const MAX_TITLE_MOBILE_SAFE = 600; 
-    const MAX_DESC_MOBILE_SAFE = 750; // Mobile descriptions get cut off earlier usually
+    const MAX_DESC_MOBILE_SAFE = 750;
 
     let currentMode = 'desktop';
 
@@ -358,6 +407,7 @@
         previewUrl: document.getElementById('preview-url'),
         
         container: document.getElementById('g-container'),
+        wrapper: document.getElementById('preview-wrapper'),
         btnDesktop: document.getElementById('btn-desktop'),
         btnMobile: document.getElementById('btn-mobile'),
         deviceLabel: document.getElementById('device-label'),
@@ -397,11 +447,7 @@
         if (currentWidth <= maxPixels) return 0;
         
         const pixelsOver = currentWidth - maxPixels;
-        // Calculate average width of a character in THIS specific string
-        // This handles "WWWW" (wide) vs "iiii" (narrow) better than a static constant
         const avgCharWidth = currentWidth / text.length;
-        
-        // Return estimated chars to delete
         return Math.ceil(pixelsOver / avgCharWidth);
     }
 
@@ -421,7 +467,7 @@
             msgEl.textContent = `~${charsOver} chars too many`;
             msgEl.style.opacity = '1';
         } else if (width > max * 0.9) {
-            // Orange Warning
+            // Yellow Warning
             barEl.style.backgroundColor = 'var(--alert-orange)';
         } else {
             // Green Good
@@ -439,12 +485,14 @@
             els.btnDesktop.classList.add('active');
             els.btnMobile.classList.remove('active');
             els.container.className = 'g-container desktop';
-            els.deviceLabel.textContent = "Desktop Preview (Single Line)";
+            els.wrapper.classList.remove('mobile-mode');
+            els.deviceLabel.textContent = "Desktop Preview";
         } else {
             els.btnMobile.classList.add('active');
             els.btnDesktop.classList.remove('active');
             els.container.className = 'g-container mobile';
-            els.deviceLabel.textContent = "Mobile Preview (Narrow Viewport)";
+            els.wrapper.classList.add('mobile-mode');
+            els.deviceLabel.textContent = "Mobile Preview";
         }
         updatePreview();
     }
@@ -455,8 +503,6 @@
         const urlText = els.urlInput.value || '';
 
         // Determine Limits based on Mode
-        // Note: Even if Mobile visually wraps, we warn based on the "Safe Limit"
-        // to prevent SEOs from writing novels.
         const maxTitle = currentMode === 'desktop' ? MAX_TITLE_DESKTOP : MAX_TITLE_MOBILE_SAFE;
         const maxDesc = currentMode === 'desktop' ? MAX_DESC_DESKTOP : MAX_DESC_MOBILE_SAFE;
 
@@ -471,11 +517,7 @@
         // 3. Render Visual Preview
         els.previewUrl.textContent = urlText;
         
-        // VISUAL TRUNCATION LOGIC:
-        // In Mobile mode, we actually want to let the CSS handle the wrapping 
-        // usually, BUT to be a useful tool, we should truncate at the "Pixel Limit"
-        // to show them what will get cut.
-        
+        // Truncate logic
         els.previewTitle.textContent = getTruncatedText(titleText, maxTitle, 'font-desktop-title');
         els.previewDesc.textContent = getTruncatedText(descText, maxDesc, 'font-desktop-desc');
     }
@@ -489,6 +531,7 @@
     updatePreview();
 
 </script>
+<script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="PierreCochart" data-description="Support me on Buy me a coffee!" data-message="" data-color="#4285F4" data-position="Right" data-x_margin="18" data-y_margin="18"></script>
 
 </body>
 </html>
