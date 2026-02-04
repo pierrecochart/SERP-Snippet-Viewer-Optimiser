@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced SERP Preview Tool</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --google-blue: #1a0dab;
+            --google-gray: #4d5156;
+            --border-color: #dadce0;
+            --alert-red: #d93025;
+            --alert-orange: #f9ab00;
+            --alert-green: #188038;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        /* --- Header & Toggles --- */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        h2 { margin: 0; color: #202124; }
+
+        .view-toggle {
+            display: flex;
+            background: #eee;
+            border-radius: 20px;
+            padding: 4px;
+        }
+
+        .view-btn {
+            border: none;
+            background: none;
+            padding: 8px 20px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: white;
+            color: var(--google-blue);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* --- Input Section --- */
+        .input-group { margin-bottom: 25px; }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #3c4043;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--google-blue);
+            outline: none;
+        }
+
+        textarea { resize: vertical; min-height: 80px; }
+
+        /* --- Progress Bars & Alerts --- */
+        .meter-container {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #f1f3f4;
+            border-radius: 4px;
+            flex-grow: 1;
+            margin-right: 15px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--alert-green);
+            transition: width 0.3s ease, background 0.3s ease;
+        }
+
+        .pixel-info {
+            text-align: right;
+            min-width: 120px;
+        }
+
+        .pixel-count { font-family: monospace; font-weight: bold; }
+        
+        .over-limit-msg {
+            display: block;
+            color: var(--alert-red);
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 2px;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.2s;
+        }
+
+        /* --- Preview Container --- */
+        .preview-wrapper {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center; /* Center the mobile view */
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .device-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        /* --- SERP Styles (Common) --- */
+        .g-container {
+            font-family: arial, sans-serif;
+            line-height: 1.58;
+            text-align: left;
+        }
+
+        /* Mode: Desktop */
+        .g-container.desktop {
+            width: 600px;
+        }
+        
+        /* Mode: Mobile */
+        .g-container.mobile {
+            width: 375px; /* Standard iPhone width */
+            border: 1px solid #eee; /* Simulate phone screen border */
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-top: 10px;
+        }
+
+        /* Element: URL/Breadcrumb */
+        .g-cite {
+            color: #202124;
+            font-size: 14px;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .g-favicon {
+            display: inline-block;
+            width: 26px;
+            height: 26px;
+            background-color: #f1f3f4;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzQyODVmNCI+PHBhdGggZD0iTTEyIDJDMTYuNDIgMiAyMCA1LjU4IDIwIDEwQzIwIDE0LjQyIDE2LjQyIDE4IDEyIDE4QzcuNTggMTggNCAxNC40MiA0IDEwQzQgNS41OCA3LjU4IDIgMTIgMlpNMTIgMjJDMTYuOTcgMjIgMjEgMTguOTUgMjEgMTUuNUgyM0MyMyAyMC4xIDE4LjA3IDI0IDEyIDI0QzUuOTMgMjQgMSAyMC4xIDEgMTUuNUgzQzMgMTguOTUgNy4wMyAyMiAxMiAyMloiLz48L3N2Zz4=');
+            background-size: 16px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Element: Title */
+        .g-title {
+            font-family: arial, sans-serif;
+            font-size: 20px;
+            line-height: 1.3;
+            color: var(--google-blue);
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 3px;
+        }
+
+        .g-title:hover { text-decoration: underline; }
+
+        /* Element: Description */
+        .g-desc {
+            color: var(--google-gray);
+            font-size: 14px;
+            line-height: 1.58;
+            word-wrap: break-word;
+        }
+
+        /* --- Mobile Specific Tweaks --- */
+        .g-container.mobile .g-cite {
+            font-size: 12px;
+            color: #5f6368;
+            margin-bottom: 8px;
+        }
+
+        .g-container.mobile .g-favicon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+        
+        .g-container.mobile .g-title {
+            color: #1558d6; /* Mobile blue is sometimes slightly different */
+            margin-bottom: 8px;
+        }
+
+        /* --- HIDDEN MEASUREMENT --- */
+        #ruler {
+            visibility: hidden;
+            position: absolute;
+            white-space: nowrap;
+            top: -9999px;
+            left: -9999px;
+        }
+        
+        /* Font classes for measurement */
+        .font-desktop-title { font-family: arial, sans-serif; font-size: 20px; }
+        .font-desktop-desc { font-family: arial, sans-serif; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-row">
+        <div>
+            <h2>SERP Snippet Optimizer</h2>
+            <p style="color:#666; font-size: 0.9rem; margin: 5px 0 0 0;">Pixel-perfect simulation with truncation estimation</p>
+        </div>
+        
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="setMode('desktop')" id="btn-desktop">Desktop</button>
+            <button class="view-btn" onclick="setMode('mobile')" id="btn-mobile">Mobile</button>
+        </div>
+    </div>
+
+    <span id="ruler"></span>
+
+    <div class="input-group">
+        <label>Page Title</label>
+        <input type="text" id="input-title" value="Best SEO Tools 2026: The Ultimate Guide to Search Engine Optimisation">
+        <div class="meter-container">
+            <div class="progress-bar"><div id="bar-title" class="progress-fill"></div></div>
+            <div class="pixel-info">
+                <div id="count-title" class="pixel-count">0px / 600px</div>
+                <div id="msg-title" class="over-limit-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Meta Description</label>
+        <textarea id="input-desc">Learn how to optimize your website with the best SEO tools available. This comprehensive guide covers keyword research, technical SEO, and backlink strategies.</textarea>
+        <div class="meter-container">
+            <div class="progress-bar"><div id="bar-desc" class="progress-fill"></div></div>
+            <div class="pixel-info">
+                <div id="count-desc" class="pixel-count">0px / 960px</div>
+                <div id="msg-desc" class="over-limit-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>URL / Breadcrumb</label>
+        <input type="text" id="input-url" value="https://www.example.com › blog › seo-tools">
+    </div>
+
+    <div class="preview-wrapper">
+        <div class="device-label" id="device-label">Desktop Preview</div>
+        
+        <div id="g-container" class="g-container desktop">
+            
+            <div class="g-cite">
+                <span class="g-favicon"></span>
+                <span id="preview-url">example.com</span>
+            </div>
+            
+            <a href="#" class="g-title" id="preview-title">
+                Page Title
+            </a>
+            
+            <div class="g-desc" id="preview-desc">
+                Description goes here...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Constants ---
+    const MAX_TITLE_DESKTOP = 600;
+    const MAX_DESC_DESKTOP = 960;
+    
+    // Mobile is trickier. Visually it's narrow (~360px), but Google allows wrapping. 
+    // However, for an "Optimizer", we usually stick to the 600px 'safe zone' rule for the input
+    // but render it visually narrow.
+    const MAX_TITLE_MOBILE_SAFE = 600; 
+    const MAX_DESC_MOBILE_SAFE = 750; // Mobile descriptions get cut off earlier usually
+
+    let currentMode = 'desktop';
+
+    // --- DOM Elements ---
+    const els = {
+        titleInput: document.getElementById('input-title'),
+        descInput: document.getElementById('input-desc'),
+        urlInput: document.getElementById('input-url'),
+        
+        previewTitle: document.getElementById('preview-title'),
+        previewDesc: document.getElementById('preview-desc'),
+        previewUrl: document.getElementById('preview-url'),
+        
+        container: document.getElementById('g-container'),
+        btnDesktop: document.getElementById('btn-desktop'),
+        btnMobile: document.getElementById('btn-mobile'),
+        deviceLabel: document.getElementById('device-label'),
+
+        barTitle: document.getElementById('bar-title'),
+        countTitle: document.getElementById('count-title'),
+        msgTitle: document.getElementById('msg-title'),
+
+        barDesc: document.getElementById('bar-desc'),
+        countDesc: document.getElementById('count-desc'),
+        msgDesc: document.getElementById('msg-desc'),
+
+        ruler: document.getElementById('ruler')
+    };
+
+    // --- Helper Functions ---
+
+    function getTextWidth(text, fontClass) {
+        els.ruler.className = fontClass;
+        els.ruler.textContent = text;
+        return els.ruler.offsetWidth;
+    }
+
+    function getTruncatedText(text, maxPixels, fontClass) {
+        const fullWidth = getTextWidth(text, fontClass);
+        if (fullWidth <= maxPixels) return text;
+
+        let current = text;
+        // Optimization: Rough jump back to avoid 1-by-1 loop on very long text
+        while (getTextWidth(current + ' ...', fontClass) > maxPixels && current.length > 0) {
+            current = current.slice(0, -1);
+        }
+        return current.trim() + ' ...';
+    }
+
+    function estimateCharsOver(text, currentWidth, maxPixels) {
+        if (currentWidth <= maxPixels) return 0;
+        
+        const pixelsOver = currentWidth - maxPixels;
+        // Calculate average width of a character in THIS specific string
+        // This handles "WWWW" (wide) vs "iiii" (narrow) better than a static constant
+        const avgCharWidth = currentWidth / text.length;
+        
+        // Return estimated chars to delete
+        return Math.ceil(pixelsOver / avgCharWidth);
+    }
+
+    function updateMeter(width, max, barEl, countEl, msgEl, text) {
+        const percentage = Math.min((width / max) * 100, 100);
+        barEl.style.width = percentage + '%';
+        countEl.textContent = `${width}px / ${max}px`;
+
+        // Reset Styles
+        msgEl.style.opacity = '0';
+        barEl.className = 'progress-fill';
+
+        if (width > max) {
+            // RED Alert
+            barEl.style.backgroundColor = 'var(--alert-red)';
+            const charsOver = estimateCharsOver(text, width, max);
+            msgEl.textContent = `~${charsOver} chars too many`;
+            msgEl.style.opacity = '1';
+        } else if (width > max * 0.9) {
+            // Orange Warning
+            barEl.style.backgroundColor = 'var(--alert-orange)';
+        } else {
+            // Green Good
+            barEl.style.backgroundColor = 'var(--alert-green)';
+        }
+    }
+
+    // --- Main Logic ---
+
+    function setMode(mode) {
+        currentMode = mode;
+        
+        // UI Toggles
+        if(mode === 'desktop') {
+            els.btnDesktop.classList.add('active');
+            els.btnMobile.classList.remove('active');
+            els.container.className = 'g-container desktop';
+            els.deviceLabel.textContent = "Desktop Preview (Single Line)";
+        } else {
+            els.btnMobile.classList.add('active');
+            els.btnDesktop.classList.remove('active');
+            els.container.className = 'g-container mobile';
+            els.deviceLabel.textContent = "Mobile Preview (Narrow Viewport)";
+        }
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const titleText = els.titleInput.value || '';
+        const descText = els.descInput.value || '';
+        const urlText = els.urlInput.value || '';
+
+        // Determine Limits based on Mode
+        // Note: Even if Mobile visually wraps, we warn based on the "Safe Limit"
+        // to prevent SEOs from writing novels.
+        const maxTitle = currentMode === 'desktop' ? MAX_TITLE_DESKTOP : MAX_TITLE_MOBILE_SAFE;
+        const maxDesc = currentMode === 'desktop' ? MAX_DESC_DESKTOP : MAX_DESC_MOBILE_SAFE;
+
+        // 1. Measure Raw Widths (using desktop font size as the 'safe' metric)
+        const titleWidth = getTextWidth(titleText, 'font-desktop-title');
+        const descWidth = getTextWidth(descText, 'font-desktop-desc');
+
+        // 2. Update Bars & Warning Messages
+        updateMeter(titleWidth, maxTitle, els.barTitle, els.countTitle, els.msgTitle, titleText);
+        updateMeter(descWidth, maxDesc, els.barDesc, els.countDesc, els.msgDesc, descText);
+
+        // 3. Render Visual Preview
+        els.previewUrl.textContent = urlText;
+        
+        // VISUAL TRUNCATION LOGIC:
+        // In Mobile mode, we actually want to let the CSS handle the wrapping 
+        // usually, BUT to be a useful tool, we should truncate at the "Pixel Limit"
+        // to show them what will get cut.
+        
+        els.previewTitle.textContent = getTruncatedText(titleText, maxTitle, 'font-desktop-title');
+        els.previewDesc.textContent = getTruncatedText(descText, maxDesc, 'font-desktop-desc');
+    }
+
+    // --- Events ---
+    els.titleInput.addEventListener('input', updatePreview);
+    els.descInput.addEventListener('input', updatePreview);
+    els.urlInput.addEventListener('input', updatePreview);
+
+    // Init
+    updatePreview();
+
+</script>
+
+</body>
+</html>
